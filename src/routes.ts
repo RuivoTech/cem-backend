@@ -22,6 +22,9 @@ routes.get("/membros/:id", membrosController.show);
 routes.post("/membros", membrosController.create);
 
 routes.get("/visitantes", visitantesController.index);
+routes.get("/visitantes/:id", visitantesController.show);
+
+routes.post("/visitantes", visitantesController.create);
 
 routes.get("/usuarios", usuarioController.index);
 routes.get("/usuarios/:id", usuarioController.show);
