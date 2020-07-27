@@ -4,19 +4,39 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
 import { Usuario } from "../interfaces/UsuarioInterface";
+import { Permissao } from "../interfaces/PermissaoInterface";
+import Mailer from "../config/Mailer";
+
+const mailer = new Mailer();
 
 class UsuariosController {
     async index() {
         try {
-            const trx = await knex.transaction();
+            const usuarios = await knex<Usuario[]>("usuarios")
+                .select("id", "nome", "email", "nivel");
 
-            const usuarios = await trx<Usuario[]>("usuarios")
-                .transacting(trx)
-                .select("nome", "email", "nivel")
+            const usuariosFiltrados = await Promise.all(usuarios.map(async (usuario) => {
+                const permissoes = await knex("permissao AS p")
+                    .join("menuPermissao AS mp", "mp.id", "p.chEsMenuPermissao")
+                    .where("chEsUsuario", usuario.id)
+                    .select(
+                        "p.chEsUsuario",
+                        "p.chEsMenuPermissao",
+                        "p.inserir",
+                        "p.alterar",
+                        "p.visualizar",
+                        "p.remover",
+                        "mp.descricao as menuPermissao",
+                        "mp.grupo as grupoMenuPermissao"
+                    );
 
-            await trx.commit();
+                return {
+                    ...usuario,
+                    permissoes
+                }
+            }));
 
-            return usuarios;
+            return usuariosFiltrados;
         } catch (error) {
             return { error: error };
         }
@@ -32,13 +52,15 @@ class UsuariosController {
                 .select("nome", "email", "nivel")
                 .first();
             if (usuario) {
-                usuario.permissao = await trx<Permissao>("permissao")
+                usuario.permissao = await trx<Permissao>("permissao AS p")
                     .transacting(trx)
+                    .join("menuPermissao AS mp", "mp.id", "p.chEsMenuPermissao")
                     .where("chEsUsuario", id)
+                    .select("p.chEsUsuario", "p.chEsMenuPermissao", "p.inserir", "p.alterar", "p.visualizar", "p.remover", "mp.nome AS menuPermissao", "mp.grupo AS grupoMenuPermissao")
             }
             trx.commit();
 
-            return usuario
+            return usuario;
         } catch (error) {
             return { error: error };
         }
@@ -50,21 +72,38 @@ class UsuariosController {
 
             const senha = crypto.randomBytes(6).toString("hex");
 
-            const trx = await knex.transaction();
 
             const salt = crypto.randomBytes(16).toString('hex');
 
             const hash = crypto.pbkdf2Sync(senha, salt,
                 1000, 64, `sha512`).toString(`hex`);
 
-            usuario.senha = hash;
+            const insertedIds = await knex<Usuario>('usuarios')
+                .insert({
+                    nome: usuario.nome,
+                    email: usuario.email,
+                    nivel: usuario.nivel,
+                    senha: hash,
+                    salt
+                });
 
-            const insertedIds = await trx<Usuario>('usuarios').transacting(trx).insert(usuario);
             const usuarioId = insertedIds[0];
 
-            await trx.commit();
-
             usuario.id = usuarioId;
+
+            usuario.permissoes.map(async (permissao) => {
+                await knex<Permissao>("permissao")
+                    .insert({
+                        chEsUsuario: usuario.id.toString(),
+                        chEsMenuPermissao: permissao.chEsMenuPermissao,
+                        inserir: permissao.inserir,
+                        alterar: permissao.alterar,
+                        visualizar: permissao.visualizar,
+                        remover: permissao.remover
+                    });
+            });
+
+            //await mailer.sendMail(usuario.email, usuario.nome, senha);
 
             return usuario;
         } catch (error) {
@@ -72,26 +111,30 @@ class UsuariosController {
         }
     }
 
-    async update(request: Request, response: Response) {
-        const {
-            id,
-            nome,
-            email,
-            nivel
-        } = request.body;
+    async update(usuario: Usuario) {
         try {
-            const trx = await knex.transaction();
 
-            const usuario = {
-                id,
-                nome,
-                email,
-                nivel
-            }
+            await knex<Usuario>('usuarios')
+                .update({
+                    id: usuario.id,
+                    nome: usuario.nome,
+                    email: usuario.email,
+                    nivel: usuario.nivel
+                })
+                .where({ id: usuario.id });
 
-            await trx<Usuario>('usuarios').transacting(trx).update(usuario).where({ id });
-
-            await trx.commit();
+            await knex("permissao").delete().where({ chEsUsuario: usuario.id });
+            usuario.permissoes.map(async (permissao) => {
+                await knex<Permissao>("permissao")
+                    .insert({
+                        chEsUsuario: permissao.chEsUsuario,
+                        chEsMenuPermissao: permissao.chEsMenuPermissao,
+                        inserir: permissao.inserir,
+                        alterar: permissao.alterar,
+                        visualizar: permissao.visualizar,
+                        remover: permissao.remover
+                    });
+            });
 
             return usuario
         } catch (error) {

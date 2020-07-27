@@ -34,23 +34,22 @@ class ContatoModel {
     }
 
     async update(contato: Contato) {
-        const trx = await knex.transaction();
+        try {
+            const contatoAtualizar = {
+                id: contato.id,
+                email: contato.email,
+                telefone: contato.telefone,
+                celular: contato.celular
+            }
 
-        const contatoAtualizar = {
-            id: contato.id,
-            email: contato.email,
-            telefone: contato.telefone,
-            celular: contato.celular
+            await knex("contatos")
+                .where("id", contato.id)
+                .update(contatoAtualizar);
+
+            return contatoAtualizar;
+        } catch (error) {
+            return error;
         }
-
-        await trx("contatos")
-            .transacting(trx)
-            .where("id", contato.id)
-            .update(contatoAtualizar);
-
-        trx.commit();
-
-        return contatoAtualizar;
     }
 
     async removeMembro(chEsMembro: Number) {

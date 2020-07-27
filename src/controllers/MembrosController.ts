@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import knex from "../database/connection";
 
 import MembroModel from "../Model/MembroModel";
 
@@ -28,9 +27,20 @@ class MembrosController {
 
             return response.json(novoMembro);
         } catch (error) {
-            return response.json({ error: error });
+            return response.json(error);
         }
+    }
 
+    async update(request: Request, response: Response) {
+        try {
+            const membro = request.body;
+
+            const novoMembro = await membroModel.update(membro);
+
+            return response.json(novoMembro);
+        } catch (error) {
+            return response.json(error);
+        }
     }
 }
 

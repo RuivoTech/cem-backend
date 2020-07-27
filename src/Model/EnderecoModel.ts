@@ -29,26 +29,25 @@ class EnderecoModel {
     }
 
     async update(endereco: Endereco) {
-        const trx = await knex.transaction();
+        try {
+            const enderecoIserir = {
+                id: endereco.id,
+                cep: endereco.cep,
+                logradouro: endereco.logradouro,
+                numero: endereco.numero,
+                complemento: endereco.complemento,
+                cidade: endereco.cidade,
+                uf: endereco.uf
+            }
 
-        const enderecoIserir = {
-            id: endereco.id,
-            cep: endereco.cep,
-            logradouro: endereco.logradouro,
-            numero: endereco.numero,
-            complemento: endereco.complemento,
-            cidade: endereco.cidade,
-            uf: endereco.uf
+            await knex("enderecos")
+                .where("id", endereco.id)
+                .update(enderecoIserir);
+
+            return enderecoIserir;
+        } catch (error) {
+            return error;
         }
-
-        const insertedId = await trx("enderecos")
-            .transacting(trx)
-            .where("id", endereco.id)
-            .update(enderecoIserir);
-
-        trx.commit();
-
-        return enderecoIserir;
     }
 
     async findMembro(id: Number) {
@@ -64,7 +63,7 @@ class EnderecoModel {
     async findVisitante(id: Number) {
         const endereco = await knex("enderecos as e")
             .join("visitante_endereco as ve", "ve.chEsEndereco", "e.id")
-            .where("ve.chEsMembro", id)
+            .where("ve.chEsVisitante", id)
             .select("e.*")
             .first();
 

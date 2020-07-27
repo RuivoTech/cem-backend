@@ -1,4 +1,3 @@
-import knex from "../database/connection";
 import { Request, Response } from "express";
 
 import UsuarioModel from "../Model/UsuarioModel";
@@ -28,7 +27,19 @@ class UsuarioController {
 
             return response.json(novoUsuario);
         } catch (error) {
-            return response.json({ error: error })
+            return response.json({ error: error });
+        }
+    }
+
+    async update(request: Request, response: Response) {
+        try {
+            const usuario = request.body;
+
+            const novoUsuario = await usuarioModel.update(usuario);
+
+            return response.json(novoUsuario);
+        } catch (error) {
+            return response.json({ error: error });
         }
     }
 }

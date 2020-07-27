@@ -29,7 +29,18 @@ class VisitantesController {
         } catch (error) {
             return response.json({ error: error });
         }
+    }
 
+    async update(request: Request, response: Response) {
+        try {
+            const visitante = request.body;
+
+            const novoVisitante = await visitanteModel.update(visitante);
+
+            return response.json(novoVisitante);
+        } catch (error) {
+            return response.json(error);
+        }
     }
 }
 

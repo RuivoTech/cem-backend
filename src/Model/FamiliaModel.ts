@@ -38,40 +38,38 @@ class FamiliaModel {
     }
 
     async update(parentes: Parentes, chEsMembro: Number) {
-        const trx = await knex.transaction();
+        try {
+            const familiaAtualizar = {
+                chEsMembro,
+                chEsConjuge: parentes.familia?.chEsConjuge,
+                chEsPai: parentes.familia?.chEsPai,
+                chEsMae: parentes.familia?.chEsMae
+            }
 
-        const familiaAtualizar = {
-            chEsMembro,
-            chEsConjuge: parentes.familia?.chEsConjuge,
-            chEsPai: parentes.familia?.chEsPai,
-            chEsMae: parentes.familia?.chEsMae
-        }
+            const filhos = parentes.filhos?.map(async filho => {
+                await knex("filhos")
+                    .where("chEsMembro", chEsMembro)
+                    .update({
+                        chEsMembro,
+                        chEsFilho: filho.chEsFilho
+                    });
 
-        const filhos = parentes.filhos?.map(async filho => {
-            await trx("filhos")
-                .transacting(trx)
-                .where("chEsMembro", chEsMembro)
-                .update({
+                return {
                     chEsMembro,
                     chEsFilho: filho.chEsFilho
-                });
+                }
+            })
+
+            await knex("familia")
+                .where("chEsMembro", chEsMembro)
+                .update(familiaAtualizar);
 
             return {
-                chEsMembro,
-                chEsFilho: filho.chEsFilho
+                familiaAtualizar,
+                filhos
             }
-        })
-
-        await trx("familia")
-            .transacting(trx)
-            .where("chEsMembro", chEsMembro)
-            .update(familiaAtualizar);
-
-        trx.commit();
-
-        return {
-            familiaAtualizar,
-            filhos
+        } catch (error) {
+            return error;
         }
     }
 

@@ -6,6 +6,7 @@ export async function up(knex: Knex) {
         table.string('nome').notNullable();
         table.string('identidade', 20).nullable();
         table.date('dataNascimento').nullable();
+        table.date('dataCasamento').nullable();
         table.date('dataCadastro').nullable();
         table.integer('estadoCivil', 2).nullable();
         table.integer('sexo', 1).nullable();

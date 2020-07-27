@@ -15,7 +15,7 @@ const familiaModel = new FamiliaModel();
 
 class MembroModel {
     async index() {
-        let membros = await knex<Membro>('membros').select("*");
+        let membros = await knex<Membro>('membros');
 
         const membrosFiltrados = await Promise.all(membros.map(async (membro) => {
             const contato = await contatoModel.findMembro(Number(membro.id));
@@ -25,7 +25,7 @@ class MembroModel {
 
             return (
                 {
-                    membro,
+                    ...membro,
                     contato,
                     endereco,
                     igreja,
@@ -103,38 +103,38 @@ class MembroModel {
     }
 
     async update(membro: Membro) {
-        const trx = await knex.transaction();
+        try {
+            const membroAtualizar = {
+                id: membro.id,
+                nome: membro.nome,
+                identidade: membro.identidade,
+                dataNascimento: membro.dataNascimento,
+                dataCadastro: membro.dataCadastro,
+                estadoCivil: membro.estadoCivil,
+                sexo: membro.sexo,
+                profissao: membro.profissao,
+                ativo: membro.ativo
+            }
 
-        const membroAtualizar = {
-            id: membro.id,
-            nome: membro.nome,
-            identidade: membro.identidade,
-            dataNascimento: membro.dataNascimento,
-            dataCadastro: membro.dataCadastro,
-            estadoCivil: membro.estadoCivil,
-            sexo: membro.sexo,
-            profissao: membro.profissao,
-            ativo: membro.ativo
-        }
+            await knex("membros")
+                .where("id", membro.id)
+                .update(membroAtualizar);
 
-        await trx("membros")
-            .transacting(trx)
-            .where("id", membro.id)
-            .update(membroAtualizar);
+            const novoContato = await contatoModel.update(membro.contato);
+            const novoEndereco = await enderecoModel.update(membro.endereco);
+            const novaIgreja = await igrejaModel.update(membro.igreja, membro.id);
+            const novaFamilia = await familiaModel.update(membro.parentes, membro.id);
 
-        const novoContato = await contatoModel.update(membro.contato);
-        const novoEndereco = await enderecoModel.update(membro.endereco);
-        const novaIgreja = await igrejaModel.update(membro.igreja, membro.id);
-        const novaFamilia = await familiaModel.update(membro.parentes, membro.id);
-
-        trx.commit();
-
-        return {
-            membro,
-            contatos: novoContato,
-            endereco: novoEndereco,
-            igreja: novaIgreja,
-            parentes: novaFamilia
+            return {
+                membro,
+                contato: novoContato,
+                endereco: novoEndereco,
+                igreja: novaIgreja,
+                parentes: novaFamilia
+            }
+        } catch (error) {
+            console.log(error);
+            return error;
         }
     }
 

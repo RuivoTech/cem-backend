@@ -37,11 +37,11 @@ class LoginModel {
                     "RuivoTech-BibliotecaDD"
                 )
 
-                return token;
+                return { token };
             }
 
             return {
-                error: "Não foi pssível encontrar o usuário"
+                error: "Por favor, verifique suas credenciais!"
             }
         } catch (error) {
             return { error: error }

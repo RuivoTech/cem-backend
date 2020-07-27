@@ -22,7 +22,7 @@ class LoginController {
 
         const token = await loginModel.login(email, senha);
 
-        return response.json({ token });
+        return response.json(token);
     }
 
     async verificarToken(request: Request, response: Response, next: NextFunction) {

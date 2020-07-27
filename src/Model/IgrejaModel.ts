@@ -4,49 +4,48 @@ import { Igreja } from "../interfaces/IgrejaInterface";
 
 class IgrejaModel {
     async create(igreja: Igreja, chEsMembro: Number) {
-        const trx = await knex.transaction();
+        try {
+            const igrejaIserir = {
+                ehBatizado: igreja.ehBatizado,
+                dataBatismo: igreja.dataBatismo,
+                igrejaBatizado: igreja.igrejaBatizado,
+                ultimoPastor: igreja.ultimoPastor,
+                ultimaIgreja: igreja.ultimaIgreja,
+                chEsMembro
+            }
 
-        const igrejaIserir = {
-            ehBatizado: igreja.ehBatizado,
-            dataBatismo: igreja.dataBatismo,
-            igrejaBatizado: igreja.igrejaBatizado,
-            ultimoPastor: igreja.ultimoPastor,
-            ultimaIgreja: igreja.ultimaIgreja,
-            chEsMembro
-        }
+            const insertedId = await knex("contatos").insert(igrejaIserir);
+            const igrejaId = insertedId[0];
 
-        const insertedId = await trx("contatos").transacting(trx).insert(igrejaIserir);
-        const igrejaId = insertedId[0];
-
-        trx.commit();
-
-        return {
-            id: igrejaId,
-            ...igrejaIserir
+            return {
+                id: igrejaId,
+                ...igrejaIserir
+            }
+        } catch (error) {
+            return error;
         }
     }
 
     async update(igreja: Igreja, chEsMembro: Number) {
-        const trx = await knex.transaction();
+        try {
+            const igrejaAtualizar = {
+                id: igreja.id,
+                ehBatizado: igreja.ehBatizado,
+                dataBatismo: igreja.dataBatismo,
+                igrejaBatizado: igreja.igrejaBatizado,
+                ultimoPastor: igreja.ultimoPastor,
+                ultimaIgreja: igreja.ultimaIgreja,
+                chEsMembro
+            }
 
-        const igrejaAtualizar = {
-            id: igreja.id,
-            ehBatizado: igreja.ehBatizado,
-            dataBatismo: igreja.dataBatismo,
-            igrejaBatizado: igreja.igrejaBatizado,
-            ultimoPastor: igreja.ultimoPastor,
-            ultimaIgreja: igreja.ultimaIgreja,
-            chEsMembro
+            await knex("contatos")
+                .where("id", igreja.id)
+                .insert(igrejaAtualizar);
+
+            return igrejaAtualizar;
+        } catch (error) {
+            return error;
         }
-
-        await trx("contatos")
-            .transacting(trx)
-            .where("id", igreja.id)
-            .insert(igrejaAtualizar);
-
-        trx.commit();
-
-        return igrejaAtualizar;
     }
 
     async findMembro(id: Number) {

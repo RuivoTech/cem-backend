@@ -11,7 +11,7 @@ const enderecoModel = new EnderecoModel();
 
 class VisitanteModel {
     async index() {
-        let visitantes = await knex<Visitante>('visitantes').select("*");
+        let visitantes = await knex<Visitante>('visitantes');
 
         const visitantesFiltrados = await Promise.all(visitantes.map(async (visitante) => {
             const contato = await contatoModel.findVisitante(Number(visitante.id));
@@ -19,7 +19,7 @@ class VisitanteModel {
 
             return (
                 {
-                    visitante,
+                    ...visitante,
                     contato,
                     endereco
                 }
@@ -44,44 +44,68 @@ class VisitanteModel {
     }
 
     async create(visitante: Visitante) {
-        const trx = await knex.transaction();
+        try {
+            const visitanteInserir = {
+                nome: visitante.nome,
+                dataVisita: visitante.dataVisita,
+                dataCadastro: knex.raw("now()"),
+                religiao: visitante.religiao,
+                querVisita: visitante.querVisita
+            }
 
-        const visitanteInserir = {
-            nome: visitante.nome,
-            dataVisita: visitante.dataVisita,
-            dataCadastro: knex.raw("now()"),
-            religiao: visitante.religiao,
-            querVisita: visitante.querVisita
+            const insertedId = await knex("visitantes").insert(visitanteInserir);
+            const visitanteId = insertedId[0];
+
+            const novoContato = await contatoModel.create(visitante.contato);
+            const novoEndereco = await enderecoModel.create(visitante.endereco);
+
+            await knex("visitante_contato")
+                .insert({
+                    chEsVisitante: visitanteId,
+                    chEsContato: novoContato.id
+                });
+
+            await knex("visitante_endereco")
+                .insert({
+                    chEsVisitante: visitanteId,
+                    chEsEndereco: novoEndereco.id
+                });
+
+            visitante.id = visitanteId;
+
+            return {
+                visitante,
+                contato: novoContato,
+                endereco: novoEndereco
+            }
+        } catch (error) {
+            return error
         }
+    }
 
-        const insertedId = await trx("visitantes").transacting(trx).insert(visitanteInserir);
-        const visitanteId = insertedId[0];
+    async update(visitante: Visitante) {
+        try {
+            const visitanteAlterar = {
+                id: visitante.id,
+                nome: visitante.nome,
+                dataVisita: visitante.dataVisita,
+                dataCadastro: visitante.dataCadastro,
+                religiao: visitante.religiao,
+                querVisita: visitante.querVisita
+            }
 
-        const novoContato = await contatoModel.create(visitante.contato);
-        const novoEndereco = await enderecoModel.create(visitante.endereco);
+            await knex<Visitante>("visitantes").update(visitanteAlterar).where({ id: visitante.id });
 
-        await trx("visitante_contato")
-            .transacting(trx)
-            .insert({
-                chEsVisitante: visitanteId,
-                chEsContato: novoContato.id
-            });
+            const novoContato = await contatoModel.update(visitante.contato);
+            const novoEndereco = await enderecoModel.update(visitante.endereco);
 
-        await trx("visitante_endereco")
-            .transacting(trx)
-            .insert({
-                chEsVisitante: visitanteId,
-                chEsEndereco: novoEndereco.id
-            });
-
-        trx.commit();
-
-        visitante.id = visitanteId;
-
-        return {
-            visitante,
-            contato: novoContato,
-            endereco: novoEndereco
+            return {
+                visitante,
+                contato: novoContato,
+                endereco: novoEndereco
+            }
+        } catch (error) {
+            return error
         }
     }
 
