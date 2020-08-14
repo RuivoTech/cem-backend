@@ -2,29 +2,28 @@ import knex from "../database/connection";
 
 import { Endereco } from "../interfaces/EnderecoInterface";
 
-
 class EnderecoModel {
 
     async create(endereco: Endereco) {
-        const trx = await knex.transaction();
+        try {
+            const enderecoIserir = {
+                cep: endereco.cep,
+                logradouro: endereco.logradouro,
+                numero: endereco.numero,
+                complemento: endereco.complemento,
+                cidade: endereco.cidade,
+                uf: endereco.uf
+            }
 
-        const enderecoIserir = {
-            cep: endereco.cep,
-            logradouro: endereco.logradouro,
-            numero: endereco.numero,
-            complemento: endereco.complemento,
-            cidade: endereco.cidade,
-            uf: endereco.uf
-        }
+            const insertedId = await knex("enderecos").insert(enderecoIserir);
+            const enderecoId = insertedId[0];
 
-        const insertedId = await trx("enderecos").transacting(trx).insert(enderecoIserir);
-        const enderecoId = insertedId[0];
-
-        trx.commit();
-
-        return {
-            id: enderecoId,
-            ...enderecoIserir
+            return {
+                id: enderecoId,
+                ...enderecoIserir
+            }
+        } catch (error) {
+            return error;
         }
     }
 
@@ -71,31 +70,30 @@ class EnderecoModel {
     }
 
     async removeMembro(chEsMembro: Number) {
-        const trx = await knex.transaction();
+        try {
+            await knex("endereco AS e")
+                .join("membro_endereco AS me", "me.chEsEndereco", "e.id")
+                .where("me.chEsMembro", chEsMembro)
+                .delete();
 
-        await trx("endereco AS e")
-            .transacting(trx)
-            .join("membro_endereco AS me", "me.chEsEndereco", "e.id")
-            .where("me.chEsMembro", chEsMembro)
-            .delete();
-
-        trx.commit();
-
-        return "OK";
+            return "OK";
+        } catch (error) {
+            return error;
+        }
     }
 
     async removeVisitante(chEsMembro: Number) {
-        const trx = await knex.transaction();
+        try {
+            await knex("endereco AS e")
+                .join("visitante_endereco AS ve", "ve.chEsEndereco", "e.id")
+                .where("ve.chEsMembro", chEsMembro)
+                .delete();
 
-        await trx("endereco AS e")
-            .transacting(trx)
-            .join("visitante_endereco AS ve", "ve.chEsEndereco", "e.id")
-            .where("ve.chEsMembro", chEsMembro)
-            .delete();
+            return "OK";
+        } catch (error) {
+            return error;
+        }
 
-        trx.commit();
-
-        return "OK";
     }
 }
 

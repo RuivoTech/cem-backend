@@ -26,8 +26,7 @@ class UsuariosController {
                         "p.alterar",
                         "p.visualizar",
                         "p.remover",
-                        "mp.descricao as menuPermissao",
-                        "mp.grupo as grupoMenuPermissao"
+                        "mp.descricao as menuPermissao"
                     );
 
                 return {
@@ -43,22 +42,28 @@ class UsuariosController {
 
     }
 
-    async show(id: string) {
+    async show(id: number) {
         try {
-            const trx = await knex.transaction();
-
-            const usuario = await trx("usuarios").transacting(trx)
+            const usuario = await knex("usuarios")
                 .where("id", id)
                 .select("nome", "email", "nivel")
                 .first();
             if (usuario) {
-                usuario.permissao = await trx<Permissao>("permissao AS p")
-                    .transacting(trx)
+                usuario.permissoes = await knex<Permissao[]>("permissao AS p")
                     .join("menuPermissao AS mp", "mp.id", "p.chEsMenuPermissao")
                     .where("chEsUsuario", id)
-                    .select("p.chEsUsuario", "p.chEsMenuPermissao", "p.inserir", "p.alterar", "p.visualizar", "p.remover", "mp.nome AS menuPermissao", "mp.grupo AS grupoMenuPermissao")
+                    .select(
+                        "p.chEsUsuario",
+                        "p.chEsMenuPermissao",
+                        "p.inserir",
+                        "p.alterar",
+                        "p.visualizar",
+                        "p.remover",
+                        "mp.nome AS menuPermissao",
+                        "mp.descricao"
+                    )
+                    .orderBy("mp.id", "asc")
             }
-            trx.commit();
 
             return usuario;
         } catch (error) {
@@ -71,7 +76,6 @@ class UsuariosController {
         try {
 
             const senha = crypto.randomBytes(6).toString("hex");
-
 
             const salt = crypto.randomBytes(16).toString('hex');
 
@@ -178,22 +182,16 @@ class UsuariosController {
 
     }
 
-    async delete(request: Request, response: Response) {
-        const { id } = request.params;
+    async delete(id: number) {
         try {
-            const trx = await knex.transaction();
+            await knex("usuarios")
+                .delete()
+                .where("id", id);
 
-            await trx.delete().transacting(trx).from("usuarios").where({ id });
-
-            const usuarios = await trx<Usuario[]>('usuarios').transacting(trx);
-
-            trx.commit();
-
-            return usuarios
+            return { mensagem: "Usuário removido com sucesso." };
         } catch (error) {
-            return { error: error }
+            return { error };
         }
-
     }
 
     async getUsuario(authorization: String) {

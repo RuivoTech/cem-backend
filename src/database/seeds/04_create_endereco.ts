@@ -18,11 +18,13 @@ export async function seed(knex: Knex) {
         .then(async (response: Endereco[]) => {
 
             await Promise.all(response.map(async endereco => {
+                const [numero, complemento] = endereco.complemento.split(" ");
+
                 const insertedId = await knex('enderecos').insert({
                     cep: endereco.cep,
                     logradouro: endereco.logradouro,
-                    numero: endereco.complemento.split(" ")[0],
-                    complemento: endereco.complemento.split(" ")[1],
+                    numero: Number(numero.replace(",", "")),
+                    complemento,
                     cidade: endereco.cidade,
                     uf: endereco.uf
                 });
@@ -40,11 +42,13 @@ export async function seed(knex: Knex) {
         .select("v.cep", "v.logradouro", "v.complemento", "vt.id AS chEs")
         .then(async (response: Endereco[]) => {
             await Promise.all(response.map(async endereco => {
+                const [numero, complemento] = endereco.complemento.split(" ");
+
                 const insertedId = await knex("enderecos").insert({
                     cep: endereco.cep,
                     logradouro: endereco.logradouro,
-                    numero: endereco.complemento.split(" ")[0],
-                    complemento: endereco.complemento.split(" ")[1]
+                    numero: Number(numero.replace(",", "")),
+                    complemento
                 });
                 console.log("Endereco visitante", insertedId[0]);
                 await knex("visitante_endereco").insert({

@@ -38,7 +38,7 @@ export async function seed(knex: Knex) {
                     salt
                 });
 
-                await mailer.sendMail(usuario.email, usuario.nome, senha);
+                //await mailer.sendMail(usuario.email, usuario.nome, senha);
             }))
         })
 }

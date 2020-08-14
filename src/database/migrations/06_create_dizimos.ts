@@ -5,7 +5,7 @@ export async function up(knex: Knex) {
         table.increments('id').primary();
         table.decimal('valor', 10.2).nullable();
         table.date('dataDizimo').nullable();
-        table.integer('chEsMembro').notNullable().unsigned().references('id').inTable("membros");
+        table.integer('chEsMembro').notNullable().unsigned().references('id').inTable("membros").onDelete("CASCADE");
     })
 }
 

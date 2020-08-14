@@ -47,7 +47,7 @@ class VisitanteModel {
         try {
             const visitanteInserir = {
                 nome: visitante.nome,
-                dataVisita: visitante.dataVisita,
+                dataVisita: visitante.dataVisita?.split("T")[0],
                 dataCadastro: knex.raw("now()"),
                 religiao: visitante.religiao,
                 querVisita: visitante.querVisita
@@ -88,8 +88,8 @@ class VisitanteModel {
             const visitanteAlterar = {
                 id: visitante.id,
                 nome: visitante.nome,
-                dataVisita: visitante.dataVisita,
-                dataCadastro: visitante.dataCadastro,
+                dataVisita: visitante.dataVisita?.split("T")[0],
+                dataCadastro: visitante.dataCadastro?.split("T")[0],
                 religiao: visitante.religiao,
                 querVisita: visitante.querVisita
             }
@@ -111,17 +111,12 @@ class VisitanteModel {
 
     async remove(id: Number) {
         try {
-            const trx = await knex.transaction();
-
             await contatoModel.removeVisitante(id);
             await enderecoModel.removeVisitante(id);
 
-            await trx("visitantes")
-                .transacting(trx)
+            await knex("visitantes")
                 .where({ id })
                 .delete();
-
-            trx.commit();
 
             return response.json({ success: "Visitante removido com sucesso!" })
         } catch (error) {

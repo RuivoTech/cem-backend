@@ -1,6 +1,7 @@
 import knex from "../database/connection";
 
 import { Contato } from "../interfaces/ContatoInterface";
+import e from "express";
 
 class ContatoModel {
     async findMembro(id: Number) {
@@ -14,23 +15,24 @@ class ContatoModel {
     }
 
     async create(contato: Contato) {
-        const trx = await knex.transaction();
+        try {
+            const contatoIserir = {
+                email: contato.email,
+                telefone: contato.telefone,
+                celular: contato.celular
+            }
 
-        const contatoIserir = {
-            email: contato.email,
-            telefone: contato.telefone,
-            celular: contato.celular
+            const insertedId = await knex("contatos").insert(contatoIserir);
+            const contatoId = insertedId[0];
+
+            return {
+                id: contatoId,
+                ...contatoIserir
+            }
+        } catch (error) {
+            return error;
         }
 
-        const insertedId = await trx("contatos").transacting(trx).insert(contatoIserir);
-        const contatoId = insertedId[0];
-
-        trx.commit();
-
-        return {
-            id: contatoId,
-            ...contatoIserir
-        }
     }
 
     async update(contato: Contato) {
@@ -53,17 +55,17 @@ class ContatoModel {
     }
 
     async removeMembro(chEsMembro: Number) {
-        const trx = await knex.transaction();
+        try {
+            await knex("contatos AS c")
+                .join("membro_contato AS mc", "mc.chEsContato", "c.id")
+                .where("mc.chEsMembro", chEsMembro)
+                .delete();
 
-        await trx("contatos AS c")
-            .transacting(trx)
-            .join("membro_contato AS mc", "mc.chEsContato", "c.id")
-            .where("mc.chEsMembro", chEsMembro)
-            .delete();
+            return "OK";
+        } catch (error) {
+            return error;
+        }
 
-        trx.commit();
-
-        return "OK";
     }
 
     async findVisitante(id: Number) {
@@ -77,17 +79,17 @@ class ContatoModel {
     }
 
     async removeVisitante(chEsVisitante: Number) {
-        const trx = await knex.transaction();
+        try {
+            await knex("contatos AS c")
+                .join("visitante_contato AS mc", "mc.chEsContato", "c.id")
+                .where("mc.chEsVisitante", chEsVisitante)
+                .delete();
 
-        await trx("contatos AS c")
-            .transacting(trx)
-            .join("visitante_contato AS mc", "mc.chEsContato", "c.id")
-            .where("mc.chEsVisitante", chEsVisitante)
-            .delete();
+            return "OK";
+        } catch (error) {
+            return error
+        }
 
-        trx.commit();
-
-        return "OK";
     }
 }
 

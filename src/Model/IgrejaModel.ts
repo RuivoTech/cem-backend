@@ -40,7 +40,7 @@ class IgrejaModel {
 
             await knex("contatos")
                 .where("id", igreja.id)
-                .insert(igrejaAtualizar);
+                .update(igrejaAtualizar);
 
             return igrejaAtualizar;
         } catch (error) {
@@ -57,16 +57,16 @@ class IgrejaModel {
     }
 
     async removeMembro(chEsMembro: Number) {
-        const trx = await knex.transaction();
+        try {
+            await knex("igreja")
+                .where({ chEsMembro })
+                .delete();
 
-        await trx("igreja")
-            .transacting(trx)
-            .where({ chEsMembro })
-            .delete();
+            return "OK";
+        } catch (error) {
+            return error;
+        }
 
-        trx.commit();
-
-        return "OK";
     }
 }
 

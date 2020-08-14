@@ -42,6 +42,18 @@ class VisitantesController {
             return response.json(error);
         }
     }
+
+    async delete(request: Request, response: Response) {
+        try {
+            const { id } = request.params;
+
+            const retorno = await visitanteModel.remove(Number(id));
+
+            return response.json(retorno);
+        } catch (error) {
+            return response.json(error);
+        }
+    }
 }
 
 export default VisitantesController;

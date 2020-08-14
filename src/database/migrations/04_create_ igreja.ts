@@ -8,7 +8,7 @@ export async function up(knex: Knex) {
         table.string('igrejaBatizado').nullable();
         table.string('ultimoPastor').nullable();
         table.string('ultimaIgreja').nullable();
-        table.integer('chEsMembro').notNullable().unsigned().references("id").inTable("membros");
+        table.integer('chEsMembro').notNullable().unsigned().references("id").inTable("membros").onDelete("CASCADE");
     })
 }
 

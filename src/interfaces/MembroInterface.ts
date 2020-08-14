@@ -2,6 +2,7 @@ import { Contato } from "./ContatoInterface";
 import { Endereco } from "./EnderecoInterface";
 import { Igreja } from "./IgrejaInterface";
 import { Parentes } from "./ParentesInterface";
+import { MinisterioMembro } from "./MinisterioMembroInterface";
 
 export interface Membro {
     id: number,
@@ -16,5 +17,6 @@ export interface Membro {
     contato: Contato,
     endereco: Endereco,
     igreja: Igreja,
-    parentes: Parentes
+    parentes: Parentes,
+    ministerios: MinisterioMembro[]
 }

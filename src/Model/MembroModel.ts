@@ -5,6 +5,7 @@ import ContatoModel from "../Model/ContatoModel";
 import EnderecoModel from "../Model/EnderecoModel";
 import IgrejaModel from "../Model/IgrejaModel";
 import FamiliaModel from "./FamiliaModel";
+import MinisterioMembroModel from "./MinisterioMembroModel";
 
 import { Membro } from "../interfaces/MembroInterface";
 
@@ -12,16 +13,36 @@ const contatoModel = new ContatoModel();
 const enderecoModel = new EnderecoModel();
 const igrejaModel = new IgrejaModel();
 const familiaModel = new FamiliaModel();
+const ministerioMembroModel = new MinisterioMembroModel();
+
+interface Geral {
+    quantidade: Number
+}
 
 class MembroModel {
     async index() {
-        let membros = await knex<Membro>('membros');
+        const membros = await knex<Membro>('membros')
+            .orderBy("nome")
+
+        const ativos = await knex("membros")
+            .where("ativo", "=", true)
+            .count("id as quantidade").first() || { quantidade: 0 };
+
+        const novos = await knex("membros")
+            .where("dataCadastro", ">=", "DATE_SUB(CURDATE(),INTERVAL 30 DAY)")
+            .count("id AS quantidade").first() || { quantidade: 0 };
+
+        const batizados = await knex("membros AS m")
+            .join("igreja AS i", "i.chEsMembro", "m.id")
+            .where("i.ehBatizado", "=", "true")
+            .count("m.id as quantidade").first() || { quantidade: 0 };
 
         const membrosFiltrados = await Promise.all(membros.map(async (membro) => {
             const contato = await contatoModel.findMembro(Number(membro.id));
             const endereco = await enderecoModel.findMembro(Number(membro.id));
             const igreja = await igrejaModel.findMembro(Number(membro.id));
             const parentes = await familiaModel.findMembro(Number(membro.id));
+            const ministerios = await ministerioMembroModel.findMembro(Number(membro.id));
 
             return (
                 {
@@ -29,12 +50,18 @@ class MembroModel {
                     contato,
                     endereco,
                     igreja,
-                    parentes
+                    parentes,
+                    ministerios
                 }
             )
         }));
 
-        return membrosFiltrados;
+        return {
+            quantidadeAtivos: ativos.quantidade,
+            quantidadeBatizados: batizados.quantidade,
+            quantidadeNovos: novos.quantidade,
+            membros: membrosFiltrados
+        };
     }
 
     async show(id: Number) {
@@ -49,56 +76,57 @@ class MembroModel {
         membro.endereco = await enderecoModel.findMembro(id);
         membro.igreja = await igrejaModel.findMembro(id);
         membro.parentes = await familiaModel.findMembro(id);
+        membro.ministerios = await ministerioMembroModel.findMembro(Number(membro.id));
 
         return membro;
     }
 
     async create(membro: Membro) {
-        const trx = await knex.transaction();
+        try {
+            const membroIserir = {
+                nome: membro.nome,
+                identidade: membro.identidade,
+                dataNascimento: membro.dataNascimento?.split("T")[0],
+                dataCadastro: knex.raw("now()"),
+                estadoCivil: membro.estadoCivil,
+                sexo: membro.sexo,
+                profissao: membro.profissao,
+                ativo: true
+            }
 
-        const membroIserir = {
-            nome: membro.nome,
-            identidade: membro.identidade,
-            dataNascimento: membro.dataNascimento,
-            dataCadastro: knex.raw("now()"),
-            estadoCivil: membro.estadoCivil,
-            sexo: membro.sexo,
-            profissao: membro.profissao,
-            ativo: true
-        }
+            const insertedId = await knex("membros").insert(membroIserir);
+            const membroId = insertedId[0];
 
-        const insertedId = await trx("membros").transacting(trx).insert(membroIserir);
-        const membroId = insertedId[0];
+            const novoContato = await contatoModel.create(membro.contato);
+            const novoEndereco = await enderecoModel.create(membro.endereco);
+            const novaIgreja = await igrejaModel.create(membro.igreja, membroId);
+            const novaFamilia = await familiaModel.create(membro.parentes, membroId);
+            const novoMinisterios = await ministerioMembroModel.create(membro.ministerios, membro.id);
 
-        const novoContato = await contatoModel.create(membro.contato);
-        const novoEndereco = await enderecoModel.create(membro.endereco);
-        const novaIgreja = await igrejaModel.create(membro.igreja, membroId);
-        const novaFamilia = await familiaModel.create(membro.parentes, membroId);
+            await knex("membro_contato")
+                .insert({
+                    chEsMembro: membroId,
+                    chEsContato: novoContato.id
+                });
 
-        await trx("membro_contato")
-            .transacting(trx)
-            .insert({
-                chEsMembro: membroId,
-                chEsContato: novoContato.id
-            });
+            await knex("membro_endereco")
+                .insert({
+                    chEsMembro: membroId,
+                    chEsEndereco: novoEndereco.id
+                })
 
-        await trx("membro_endereco")
-            .transacting(trx)
-            .insert({
-                chEsMembro: membroId,
-                chEsEndereco: novoEndereco.id
-            })
+            membro.id = membroId;
 
-        trx.commit();
-
-        membro.id = membroId;
-
-        return {
-            membro,
-            contatos: novoContato,
-            endereco: novoEndereco,
-            igreja: novaIgreja,
-            parentes: novaFamilia
+            return {
+                membro,
+                contatos: novoContato,
+                endereco: novoEndereco,
+                igreja: novaIgreja,
+                parentes: novaFamilia,
+                ministerios: novoMinisterios
+            }
+        } catch (error) {
+            return error;
         }
     }
 
@@ -124,13 +152,15 @@ class MembroModel {
             const novoEndereco = await enderecoModel.update(membro.endereco);
             const novaIgreja = await igrejaModel.update(membro.igreja, membro.id);
             const novaFamilia = await familiaModel.update(membro.parentes, membro.id);
+            const novoMinisterio = await ministerioMembroModel.update(membro.ministerios, membro.id);
 
             return {
                 membro,
                 contato: novoContato,
                 endereco: novoEndereco,
                 igreja: novaIgreja,
-                parentes: novaFamilia
+                parentes: novaFamilia,
+                ministerios: novoMinisterio
             }
         } catch (error) {
             console.log(error);
@@ -138,25 +168,21 @@ class MembroModel {
         }
     }
 
-    async remove(id: Number) {
+    async delete(id: Number) {
         try {
-            const trx = await knex.transaction();
-
             await contatoModel.removeMembro(id);
             await enderecoModel.removeMembro(id);
             await igrejaModel.removeMembro(id);
             await familiaModel.removeMembro(id);
+            await ministerioMembroModel.deleteMembro(id);
 
-            await trx("membros")
-                .transacting(trx)
-                .where({ id })
+            await knex("membros")
+                .where("id", id)
                 .delete();
 
-            trx.commit();
-
-            return response.json({ success: "Membro Removido com sucesso!" })
+            return { success: "Membro Removido com sucesso!" };
         } catch (error) {
-            return response.json({ error: error })
+            return error;
         }
     }
 }

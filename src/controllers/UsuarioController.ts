@@ -1,22 +1,34 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 
 import UsuarioModel from "../Model/UsuarioModel";
 
 const usuarioModel = new UsuarioModel();
 
 class UsuarioController {
-    async index(request: Request, response: Response) {
-        const usuarios = await usuarioModel.index();
+    async index(request: Request, response: Response, next: NextFunction) {
+        try {
+            if (request.params.id) {
+                next();
+            } else {
+                const usuarios = await usuarioModel.index();
 
-        return response.json(usuarios);
+                return response.json(usuarios);
+            }
+        } catch (error) {
+            return response.json(error);
+        }
     }
 
     async show(request: Request, response: Response) {
-        const { id } = request.params;
+        try {
+            const { id } = request.params;
 
-        const usuario = await usuarioModel.show(id);
+            const usuario = await usuarioModel.show(Number(id));
 
-        return response.json(usuario);
+            return response.json(usuario);
+        } catch (error) {
+            return response.json(error);
+        }
     }
 
     async create(request: Request, response: Response) {
@@ -27,7 +39,7 @@ class UsuarioController {
 
             return response.json(novoUsuario);
         } catch (error) {
-            return response.json({ error: error });
+            return response.json(error);
         }
     }
 
@@ -41,6 +53,12 @@ class UsuarioController {
         } catch (error) {
             return response.json({ error: error });
         }
+    }
+
+    async delete(request: Request, response: Response) {
+        const usuario = await usuarioModel.delete(Number(request.params.id));
+
+        return response.json(usuario);
     }
 }
 
