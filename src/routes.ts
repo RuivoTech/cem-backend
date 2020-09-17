@@ -1,5 +1,4 @@
-import express, { request, response } from "express";
-import crypto from "crypto";
+import express from "express";
 
 import MembrosController from "./controllers/MembrosController";
 import VisitantesController from "./controllers/VisitantesController";
@@ -12,6 +11,7 @@ import EventosController from "./controllers/EventosController";
 import InscricoesController from "./controllers/InscricoesController";
 import DizimosController from "./controllers/DizimosController";
 import OfertasController from "./controllers/OfertasController";
+import RelatoriosController from "./controllers/RelatoriosController";
 
 const routes = express.Router();
 
@@ -26,7 +26,7 @@ const eventosController = new EventosController();
 const inscricoesController = new InscricoesController();
 const dizimosController = new DizimosController();
 const ofertasController = new OfertasController();
-
+const relatoriosController = new RelatoriosController();
 
 routes.post("/login", loginController.login);
 
@@ -87,5 +87,7 @@ routes.route("/ofertas/:id?")
     .post(ofertasController.create)
     .put(ofertasController.update)
     .delete(ofertasController.delete);
+
+routes.get("/relatorios/:route", relatoriosController.switch);
 
 export default routes;

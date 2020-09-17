@@ -9,6 +9,14 @@ import EnderecoModel from "../Model/EnderecoModel";
 const contatoModel = new ContatoModel();
 const enderecoModel = new EnderecoModel();
 
+interface Filters {
+    aniversariantes?: boolean,
+    dataInicio?: string,
+    dataFim?: string,
+    ministerio?: string,
+    sexo?: string
+}
+
 class VisitanteModel {
     async index() {
         let visitantes = await knex<Visitante>('visitantes');
@@ -122,6 +130,13 @@ class VisitanteModel {
         } catch (error) {
             return response.json({ error: error })
         }
+    }
+
+    async relatorio(filters: Filters) {
+        const response = knex("visitantes")
+            .whereBetween("dataVisita", [String(filters.dataInicio), String(filters.dataFim)]);
+
+        return response;
     }
 }
 

@@ -6,6 +6,7 @@ import EnderecoModel from "../Model/EnderecoModel";
 import IgrejaModel from "../Model/IgrejaModel";
 import FamiliaModel from "./FamiliaModel";
 import MinisterioMembroModel from "./MinisterioMembroModel";
+import Utils from "../Utils";
 
 import { Membro } from "../interfaces/MembroInterface";
 
@@ -15,9 +16,12 @@ const igrejaModel = new IgrejaModel();
 const familiaModel = new FamiliaModel();
 const ministerioMembroModel = new MinisterioMembroModel();
 
-interface Geral {
-    quantidade: Number
+interface Filters {
+    constant?: string,
+    value?: [] | string
 }
+
+const utils = new Utils();
 
 class MembroModel {
     async index() {
@@ -184,6 +188,28 @@ class MembroModel {
         } catch (error) {
             return error;
         }
+    }
+
+    async relatorio(filters: any) {
+        const query = utils.montarQuery(filters);
+        console.log(query);
+
+        const response = knex("membros AS m")
+            .join("membro_contato AS mc", "mc.chEsMembro", "m.id")
+            .join("contatos AS c", "c.id", "mc.chEsContato")
+            .leftJoin("ministerioMembro AS mm", "m.id", "mm.chEsMembro")
+            .whereRaw(query.where, query.values)
+            .select(
+                "m.nome",
+                "m.dataNascimento",
+                "c.email",
+                "c.celular",
+                "c.telefone"
+            )
+            .orderByRaw("DAY(m.dataNascimento) ASC");
+
+
+        return response;
     }
 }
 
