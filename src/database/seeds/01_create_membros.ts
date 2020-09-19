@@ -1,7 +1,10 @@
 import Knex from "knex";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export async function seed(knex: Knex) {
-    await knex('cem_new.membros')
+    await knex(`${process.env.BD_LAST_BASE}.membros`)
         .select(
             "nome",
             "rg as identidade",

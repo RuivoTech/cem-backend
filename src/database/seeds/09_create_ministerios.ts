@@ -1,4 +1,7 @@
 import Knex from "knex";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 interface Ministerio {
     id: number,
@@ -7,7 +10,7 @@ interface Ministerio {
 }
 
 export async function seed(knex: Knex) {
-    await knex("cem_new.ministerios")
+    await knex(`${process.env.BD_LAST_BASE}.ministerios`)
         .then(async (response: Ministerio[]) => {
             await Promise.all(response.map(async ministerio => {
 

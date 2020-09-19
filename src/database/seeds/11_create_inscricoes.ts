@@ -1,4 +1,7 @@
 import Knex from "knex";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 interface Inscricao {
     id: number,
@@ -11,9 +14,9 @@ interface Inscricao {
 }
 
 export async function seed(knex: Knex) {
-    await knex("cem_new.inscricoes AS ni")
-        .join("cem_new.eventos AS ne", "ne.id", "ni.idEvento")
-        .join("cem_testes.eventos AS te", "te.descricao", "ne.descricao")
+    await knex(`${process.env.BD_LAST_BASE}.inscricoes AS ni`)
+        .join(`${process.env.BD_LAST_BASE}.eventos AS ne`, "ne.id", "ni.idEvento")
+        .join(`${process.env.BD_BASE}.eventos AS te`, "te.descricao", "ne.descricao")
         .select("ni.nome", "ni.email", "ni.celular", "te.id AS chEsEvento", "ni.pago")
         .then(async (response: Inscricao[]) => {
             await Promise.all(response.map(async inscricao => {

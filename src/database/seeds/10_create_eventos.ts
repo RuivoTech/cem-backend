@@ -1,4 +1,7 @@
 import Knex from "knex";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 interface Evento {
     id: number,
@@ -10,7 +13,7 @@ interface Evento {
 }
 
 export async function seed(knex: Knex) {
-    await knex("cem_new.eventos")
+    await knex(`${process.env.BD_LAST_BASE}.eventos`)
         .then(async (response: Evento[]) => {
             await Promise.all(response.map(async evento => {
 

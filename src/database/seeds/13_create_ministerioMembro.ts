@@ -1,4 +1,7 @@
 import Knex from "knex";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 interface MinisterioMembro {
     id: number,
@@ -8,11 +11,11 @@ interface MinisterioMembro {
 }
 
 export async function seed(knex: Knex) {
-    await knex("cem_new.ministerioMembro AS nmn")
-        .join("cem_new.membros AS nm", "nm.id", "nmn.chEsMembro")
-        .join("cem_testes.membros AS tm", "tm.nome", "nm.nome")
-        .join("cem_new.ministerios AS min", "nmn.chEsMinisterio", "min.id")
-        .join("cem_testes.ministerios AS tmin", "tmin.nome", "min.nome")
+    await knex(`${process.env.BD_LAST_BASE}.ministerioMembro AS nmn`)
+        .join(`${process.env.BD_LAST_BASE}.membros AS nm`, "nm.id", "nmn.chEsMembro")
+        .join(`${process.env.BD_BASE}.membros AS tm`, "tm.nome", "nm.nome")
+        .join(`${process.env.BD_LAST_BASE}.ministerios AS min`, "nmn.chEsMinisterio", "min.id")
+        .join(`${process.env.BD_BASE}.ministerios AS tmin`, "tmin.nome", "min.nome")
         .select("tm.id AS chEsMembro", "tmin.id AS chEsMinisterio", "nmn.checked")
         .then(async (response: MinisterioMembro[]) => {
             await Promise.all(response.map(async ministerio => {

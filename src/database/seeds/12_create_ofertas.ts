@@ -1,4 +1,7 @@
 import Knex from "knex";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 interface Oferta {
     id: number,
@@ -7,7 +10,7 @@ interface Oferta {
 }
 
 export async function seed(knex: Knex) {
-    await knex("cem_new.ofertas")
+    await knex(`${process.env.BD_LAST_BASE}.ofertas`)
         .then(async (response: Oferta[]) => {
             await Promise.all(response.map(async oferta => {
 

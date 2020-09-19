@@ -1,4 +1,7 @@
 import Knex from "knex";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 interface Contato {
     email: string,
@@ -8,9 +11,9 @@ interface Contato {
 }
 
 export async function seed(knex: Knex) {
-    await knex('cem_new.contato as c')
-        .join("cem_new.membros as m", "m.chEsContato", "c.id")
-        .join("cem_testes.membros as mt", "mt.nome", "m.nome")
+    await knex(`${process.env.BD_LAST_BASE}.contato as c`)
+        .join(`${process.env.BD_LAST_BASE}.membros as m`, "m.chEsContato", "c.id")
+        .join(`${process.env.BD_BASE}.membros as mt`, "mt.nome", "m.nome")
         .select("c.email", "c.telefone", "c.celular", "mt.id as chEs")
         .then(async (response: Contato[]) => {
 
@@ -29,8 +32,8 @@ export async function seed(knex: Knex) {
             }));
 
         });
-    await knex("cem_new.visitante AS v")
-        .join("cem_testes.visitantes AS vt", "vt.nome", "v.nome")
+    await knex(`${process.env.BD_LAST_BASE}.visitante AS v`)
+        .join(`${process.env.BD_BASE}.visitantes AS vt`, "vt.nome", "v.nome")
         .select("v.email", "v.telefone", "v.celular", "vt.id AS chEs")
         .then(async (response: Contato[]) => {
             await Promise.all(response.map(async contato => {

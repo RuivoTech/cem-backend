@@ -1,5 +1,4 @@
 import knex from "../database/connection";
-import { response } from "express";
 
 import ContatoModel from "../Model/ContatoModel";
 import EnderecoModel from "../Model/EnderecoModel";

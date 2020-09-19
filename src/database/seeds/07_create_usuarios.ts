@@ -1,7 +1,10 @@
 import Knex from "knex";
 import crypto from "crypto";
+import dotenv from "dotenv";
 
 import Mailer from "../../config/Mailer";
+
+dotenv.config();
 
 interface Usuario {
     id: number,
@@ -15,11 +18,11 @@ interface Usuario {
 const mailer = new Mailer();
 
 export async function seed(knex: Knex) {
-    await knex("cem_new.usuarios AS un")
-        .join("cem_new.membros AS nm", "nm.id", "un.chEsMembro")
-        .join("cem_testes.membros AS tm", "tm.nome", "nm.nome")
+    await knex(`${process.env.BD_LAST_BASE}.usuarios AS un`)
+        .join(`${process.env.BD_LAST_BASE}.membros AS nm`, "nm.id", "un.chEsMembro")
+        .join(`${process.env.BD_BASE}.membros AS tm`, "tm.nome", "nm.nome")
         .join("membro_contato AS mc", "mc.chEsMembro", "tm.id")
-        .join("cem_testes.contatos AS c", "c.id", "mc.chEsContato")
+        .join(`${process.env.BD_BASE}.contatos AS c`, "c.id", "mc.chEsContato")
         .select("tm.nome", "c.email")
         .then(async (response: Usuario[]) => {
             await Promise.all(response.map(async usuario => {
@@ -38,7 +41,7 @@ export async function seed(knex: Knex) {
                     salt
                 });
 
-                //await mailer.sendMail(usuario.email, usuario.nome, senha);
+                await mailer.sendMail(usuario.email, usuario.nome, senha);
             }))
         })
 }

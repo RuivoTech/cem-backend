@@ -1,4 +1,7 @@
 import Knex from "knex";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 interface Igreja {
     ehBatizado: boolean,
@@ -10,9 +13,9 @@ interface Igreja {
 }
 
 export async function seed(knex: Knex) {
-    await knex('cem_new.dadosIgreja as di')
-        .join("cem_new.membros as m", "m.chEsIgreja", "di.id")
-        .join("cem_testes.membros as mt", "mt.nome", "m.nome")
+    await knex(`${process.env.BD_LAST_BASE}.dadosIgreja as di`)
+        .join(`${process.env.BD_LAST_BASE}.membros as m`, "m.chEsIgreja", "di.id")
+        .join(`${process.env.BD_BASE}.membros as mt`, "mt.nome", "m.nome")
         .select(
             "di.isBatizado as ehBatizado",
             "di.dataBatismo",

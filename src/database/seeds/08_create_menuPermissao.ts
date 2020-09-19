@@ -1,4 +1,7 @@
 import Knex from "knex";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 interface MenuPermissao {
     id: number,
@@ -8,7 +11,7 @@ interface MenuPermissao {
 }
 
 export async function seed(knex: Knex) {
-    await knex("cem_new.menuPermissao")
+    await knex(`${process.env.BD_LAST_BASE}.menuPermissao`)
         .then(async (response: MenuPermissao[]) => {
             await Promise.all(response.map(async menuPermissao => {
 
