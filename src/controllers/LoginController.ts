@@ -28,18 +28,16 @@ class LoginController {
     async verificarToken(request: Request, response: Response, next: NextFunction) {
         const { authorization } = request.headers;
 
-        const trx = await knex.transaction();
         if (authorization && authorization.split(' ')[0] === 'Bearer') {
             if (authorization.split(' ')[1] === "undefined") {
                 return response.json({ error: "undefined" });
             }
             try {
                 const autorizado = jwt.verify(authorization.split(' ')[1], "RuivoTech-BibliotecaDD") as Usuario;
-                const usuario = await trx<Usuario>("usuarios").transacting(trx)
+                const usuario = await knex<Usuario>("usuarios")
                     .where({ email: autorizado.email })
                     .first();
 
-                await trx.commit();
                 if (!usuario) {
                     return response.json({ error: "Você não tem autorização para acessar esta rota!" });
                 }

@@ -30,7 +30,7 @@ const relatoriosController = new RelatoriosController();
 
 routes.post("/login", loginController.login);
 
-//routes.use(loginController.verificarToken);
+routes.use(loginController.verificarToken);
 
 routes.route("/home")
     .get(homeController.index);
