@@ -62,7 +62,7 @@ class UsuariosController {
                         "mp.nome AS menuPermissao",
                         "mp.descricao"
                     )
-                    .orderBy("mp.id", "asc")
+                    .orderBy("mp.ordem", "asc")
             }
 
             return usuario;
