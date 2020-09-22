@@ -191,7 +191,6 @@ class MembroModel {
 
     async relatorio(filters: any) {
         const query = utils.montarQuery(filters);
-        console.log(query);
 
         const response = knex("membros AS m")
             .join("membro_contato AS mc", "mc.chEsMembro", "m.id")

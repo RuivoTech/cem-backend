@@ -1,4 +1,16 @@
-export const FiltrosConstantes = {
+interface Filter {
+    dataInicio: string,
+    dataFim: string,
+    diaInicio: string,
+    diaFim: string,
+    aniversariante: string,
+    ministerio: string,
+    sexo: string,
+    estadoCivil: string,
+    nome: string
+}
+
+export const FiltroConstantes: Filter = {
     dataInicio: "MONTH(m.dataNascimento) BETWEEN MONTH(?)",
     dataFim: "MONTH(?)",
     diaInicio: "DAY(m.dataNascimento) BETWEEN DAY(?)",
