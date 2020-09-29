@@ -30,6 +30,8 @@ const relatoriosController = new RelatoriosController();
 
 routes.post("/login", loginController.login);
 
+routes.get("/relatorios/:route", relatoriosController.switch);
+
 routes.use(loginController.verificarToken);
 
 routes.route("/home")
@@ -87,7 +89,5 @@ routes.route("/ofertas/:id?")
     .post(ofertasController.create)
     .put(ofertasController.update)
     .delete(ofertasController.delete);
-
-routes.get("/relatorios/:route", relatoriosController.switch);
 
 export default routes;

@@ -63,6 +63,7 @@ class UsuariosController {
                         "mp.descricao"
                     )
                     .orderBy("mp.ordem", "asc")
+                    .distinct();
             }
 
             return usuario;
