@@ -1,4 +1,7 @@
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 class Mailer {
     async sendMail(email: String, nome: String, senha: String) {
@@ -9,8 +12,8 @@ class Mailer {
                 port: 587,
                 secure: false,
                 auth: {
-                    user: "ruivotech@gmail.com",
-                    pass: "Bia1812@"
+                    user: process.env.USER_EMAIL,
+                    pass: process.env.USER_PASSWORD
                 }
             });
 
