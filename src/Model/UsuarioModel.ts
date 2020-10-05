@@ -108,7 +108,7 @@ class UsuariosController {
                     });
             });
 
-            //await mailer.sendMail(usuario.email, usuario.nome, senha);
+            await mailer.sendMail(usuario.email, usuario.nome, senha);
 
             return usuario;
         } catch (error) {
