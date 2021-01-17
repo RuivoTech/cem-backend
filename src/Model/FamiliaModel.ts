@@ -13,9 +13,9 @@ class FamiliaModel {
         try {
             const familiaInserir = {
                 chEsMembro,
-                chEsConjuge: parentes.familia?.chEsConjuge,
-                chEsPai: parentes.familia?.chEsPai,
-                chEsMae: parentes.familia?.chEsMae
+                chEsConjuge: parentes?.chEsConjuge,
+                chEsPai: parentes?.chEsPai,
+                chEsMae: parentes?.chEsMae
             }
 
             const filhos = await filhosModel.create(parentes.filhos, chEsMembro);
@@ -36,9 +36,9 @@ class FamiliaModel {
         try {
             const familiaAtualizar = {
                 chEsMembro,
-                chEsConjuge: parentes.familia?.chEsConjuge,
-                chEsPai: parentes.familia?.chEsPai,
-                chEsMae: parentes.familia?.chEsMae
+                chEsConjuge: parentes?.chEsConjuge,
+                chEsPai: parentes?.chEsPai,
+                chEsMae: parentes?.chEsMae
             }
 
             const filhos = await filhosModel.create(parentes.filhos, chEsMembro);

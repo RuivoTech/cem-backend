@@ -1,7 +1,11 @@
-import { Familia } from "./FamiliaInterface";
 import { Filhos } from "./FilhosInterface";
 
 export interface Parentes {
-    familia?: Familia,
+    chEsConjuge?: number,
+    chEsPai?: number,
+    chEsMae?: number,
+    nomeConjuge?: string,
+    noemPai?: string,
+    nomeMae?: string,
     filhos: Filhos[]
 }
