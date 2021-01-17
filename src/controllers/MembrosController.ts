@@ -12,14 +12,12 @@ class MembrosController {
     }
 
     async show(request: Request, response: Response, next: NextFunction) {
-        const { id } = request.params;
-
-        if (!id) {
-            next();
-            return;
-        }
-
         try {
+            const { id } = request.params;
+            if (!id) {
+                next();
+                return;
+            }
 
             const membro = await membroModel.show(Number(id));
 

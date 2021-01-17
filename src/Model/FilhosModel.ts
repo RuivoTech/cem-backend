@@ -5,6 +5,10 @@ class FilhosModel {
     async create(filhos: Filhos[], chEsMembro: Number) {
         try {
 
+            if (!filhos) {
+                return;
+            }
+
             await knex("filhos").delete().where("chEsMembro", chEsMembro);
 
             const filhosInseridos = filhos?.map(async filho => {

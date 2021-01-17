@@ -14,7 +14,7 @@ class IgrejaModel {
                 chEsMembro
             }
 
-            const insertedId = await knex("contatos").insert(igrejaIserir);
+            const insertedId = await knex("igreja").insert(igrejaIserir);
             const igrejaId = insertedId[0];
 
             return {
@@ -31,19 +31,21 @@ class IgrejaModel {
             const igrejaAtualizar = {
                 id: igreja.id,
                 ehBatizado: igreja.ehBatizado,
-                dataBatismo: igreja.dataBatismo,
+                dataBatismo: igreja.dataBatismo?.split("T")[0],
                 igrejaBatizado: igreja.igrejaBatizado,
                 ultimoPastor: igreja.ultimoPastor,
                 ultimaIgreja: igreja.ultimaIgreja,
                 chEsMembro
             }
 
-            await knex("contatos")
+            await knex("igreja")
                 .where("id", igreja.id)
                 .update(igrejaAtualizar);
 
             return igrejaAtualizar;
         } catch (error) {
+            console.log(error);
+
             return error;
         }
     }

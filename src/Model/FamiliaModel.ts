@@ -18,15 +18,19 @@ class FamiliaModel {
                 chEsMae: parentes?.chEsMae
             }
 
-            const filhos = await filhosModel.create(parentes.filhos, chEsMembro);
+            await knex("familia").delete().where("chEsMembro", chEsMembro);
 
             await knex("familia").insert(familiaInserir);
+
+            const filhos = await filhosModel.create(parentes.filhos, chEsMembro);
 
             return {
                 ...familiaInserir,
                 filhos
             }
         } catch (error) {
+            console.log("create", error);
+
             return error;
         }
 
@@ -41,24 +45,28 @@ class FamiliaModel {
                 chEsMae: parentes?.chEsMae
             }
 
-            const filhos = await filhosModel.create(parentes.filhos, chEsMembro);
-
-            await knex("familia")
+            const query = knex("familia")
                 .where("chEsMembro", chEsMembro)
-                .update(familiaAtualizar);
+                .update(familiaAtualizar).toQuery();
+            console.log(query);
+
+
+            const filhos = await filhosModel.create(parentes.filhos, chEsMembro);
 
             return {
                 ...familiaAtualizar,
                 filhos
             }
         } catch (error) {
+            console.log("update", error);
+
             return error;
         }
     }
 
     async findMembro(id: Number) {
         const familia: Familia = await knex<Familia>("familia")
-            .join("membros as conjuge", "conjuge.id", "familia.chEsConjuge")
+            .leftJoin("membros as conjuge", "conjuge.id", "familia.chEsConjuge")
             .leftJoin("membros as pai", "pai.id", "familia.chEsPai")
             .leftJoin("membros as mae", "mae.id", "familia.chEsMae")
             .where("familia.chEsMembro", id)

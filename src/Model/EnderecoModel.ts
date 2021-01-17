@@ -45,6 +45,8 @@ class EnderecoModel {
 
             return enderecoIserir;
         } catch (error) {
+            console.log(error);
+
             return error;
         }
     }

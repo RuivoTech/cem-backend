@@ -3,7 +3,7 @@ import knex from "../database/connection";
 import ContatoModel from "../Model/ContatoModel";
 import EnderecoModel from "../Model/EnderecoModel";
 import IgrejaModel from "../Model/IgrejaModel";
-import FamiliaModel from "./FamiliaModel";
+import FamiliaController from "../controllers/FamiliaController";
 import MinisterioMembroModel from "./MinisterioMembroModel";
 import Utils from "../Utils";
 
@@ -12,7 +12,7 @@ import { Membro } from "../interfaces/MembroInterface";
 const contatoModel = new ContatoModel();
 const enderecoModel = new EnderecoModel();
 const igrejaModel = new IgrejaModel();
-const familiaModel = new FamiliaModel();
+const familiaController = new FamiliaController();
 const ministerioMembroModel = new MinisterioMembroModel();
 
 interface Filters {
@@ -44,7 +44,7 @@ class MembroModel {
             const contato = await contatoModel.findMembro(Number(membro.id));
             const endereco = await enderecoModel.findMembro(Number(membro.id));
             const igreja = await igrejaModel.findMembro(Number(membro.id));
-            const parentes = await familiaModel.findMembro(Number(membro.id));
+            const parentes = await familiaController.findMembro(Number(membro.id));
             const ministerios = await ministerioMembroModel.findMembro(Number(membro.id));
 
             return (
@@ -78,7 +78,7 @@ class MembroModel {
         membro.contato = await contatoModel.findMembro(id);
         membro.endereco = await enderecoModel.findMembro(id);
         membro.igreja = await igrejaModel.findMembro(id);
-        membro.parentes = await familiaModel.findMembro(id);
+        membro.parentes = await familiaController.findMembro(id);
         membro.ministerios = await ministerioMembroModel.findMembro(Number(membro.id));
 
         return membro;
@@ -103,7 +103,7 @@ class MembroModel {
             const novoContato = await contatoModel.create(membro.contato);
             const novoEndereco = await enderecoModel.create(membro.endereco);
             const novaIgreja = await igrejaModel.create(membro.igreja, membroId);
-            const novaFamilia = await familiaModel.create(membro.parentes, membroId);
+            const novaFamilia = await familiaController.save(membro.parentes, membroId);
             const novoMinisterios = await ministerioMembroModel.create(membro.ministerios, membro.id);
 
             await knex("membro_contato")
@@ -139,8 +139,8 @@ class MembroModel {
                 id: membro.id,
                 nome: membro.nome,
                 identidade: membro.identidade,
-                dataNascimento: membro.dataNascimento,
-                dataCadastro: membro.dataCadastro,
+                dataNascimento: membro.dataNascimento?.split("T")[0],
+                dataCadastro: membro.dataCadastro ? membro.dataCadastro : knex.raw("now()"),
                 estadoCivil: membro.estadoCivil,
                 sexo: membro.sexo,
                 profissao: membro.profissao,
@@ -154,7 +154,7 @@ class MembroModel {
             const novoContato = await contatoModel.update(membro.contato);
             const novoEndereco = await enderecoModel.update(membro.endereco);
             const novaIgreja = await igrejaModel.update(membro.igreja, membro.id);
-            const novaFamilia = await familiaModel.update(membro.parentes, membro.id);
+            const novaFamilia = await familiaController.save(membro.parentes, membro.id);
             const novoMinisterio = await ministerioMembroModel.update(membro.ministerios, membro.id);
 
             return {
@@ -176,7 +176,7 @@ class MembroModel {
             await contatoModel.removeMembro(id);
             await enderecoModel.removeMembro(id);
             await igrejaModel.removeMembro(id);
-            await familiaModel.removeMembro(id);
+            await familiaController.removeMembro(id);
             await ministerioMembroModel.deleteMembro(id);
 
             await knex("membros")
