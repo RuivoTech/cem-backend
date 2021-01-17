@@ -16,11 +16,18 @@ class EventoModel {
     async create(evento: Evento) {
         try {
             const eventoInserir = {
-                ativo: evento.ativo,
-                dataInicio: evento.dataInicio.split("T")[0],
-                dataFim: evento.dataFim.split("T")[0],
-                descricao: evento.descricao,
-                valor: evento.valor
+                titulo: evento.titulo,
+                tipo: evento.tipo,
+                status: evento.status,
+                repete: evento.repete,
+                diaSemana: evento.diaSemana,
+                frequencia: evento.frequencia,
+                ehPago: evento.ehPago,
+                valor: evento.valor,
+                dataInicio: evento.dataInicio,
+                dataFim: evento.dataFim,
+                horaInicio: evento.horaInicio,
+                horaFim: evento.horaFim
             }
 
             const insertedIds = await knex("eventos")
@@ -40,10 +47,10 @@ class EventoModel {
         try {
             const eventoInserir = {
                 id: evento.id,
-                ativo: evento.ativo,
+                status: evento.status,
                 dataInicio: evento.dataInicio.split("T")[0],
                 dataFim: evento.dataFim.split("T")[0],
-                descricao: evento.descricao,
+                titulo: evento.titulo,
                 valor: evento.valor
             }
 

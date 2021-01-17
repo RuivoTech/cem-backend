@@ -38,8 +38,8 @@ routes.route("/home")
     .get(homeController.index);
 
 routes.route("/membros/:id?")
-    .get(membrosController.index)
     .get(membrosController.show)
+    .get(membrosController.index)
     .post(membrosController.create)
     .put(membrosController.update)
     .delete(membrosController.delete);
