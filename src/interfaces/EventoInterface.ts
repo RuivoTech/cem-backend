@@ -1,8 +1,15 @@
 export interface Evento {
     id?: number,
-    ativo: boolean,
+    titulo: string,
+    tipo: number,
+    status: number,
+    repete: boolean,
+    diaSemana: number,
+    frequencia: number,
+    ehPago: boolean,
+    valor: Number,
     dataInicio: string,
     dataFim: string,
-    descricao: string,
-    valor: string
+    horaInicio: string,
+    horaFim: string
 }

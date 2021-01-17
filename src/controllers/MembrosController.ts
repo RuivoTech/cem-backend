@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
 import MembroModel from "../Model/MembroModel";
 
@@ -11,9 +11,15 @@ class MembrosController {
         return response.json(membros);
     }
 
-    async show(request: Request, response: Response) {
+    async show(request: Request, response: Response, next: NextFunction) {
+        const { id } = request.params;
+
+        if (!id) {
+            next();
+            return;
+        }
+
         try {
-            const { id } = request.params;
 
             const membro = await membroModel.show(Number(id));
 

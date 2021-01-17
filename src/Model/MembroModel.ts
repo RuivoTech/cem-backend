@@ -204,7 +204,8 @@ class MembroModel {
                 "c.celular",
                 "c.telefone"
             )
-            .orderByRaw("DAY(m.dataNascimento) ASC");
+            .orderBy("m.nome", "asc")
+            .distinct();
 
 
         return response;
