@@ -19,7 +19,7 @@ class HomeModel {
         const casados = await knex("membros")
             .whereRaw("MONTH(dataCasamento) = MONTH(now())")
             .orderByRaw("DAY(dataCasamento) ASC")
-            .select("id", "nome", "dataCasamento");
+            .select("id", "nome", "dataCasamento", knex.raw("TIMESTAMPDIFF(YEAR, dataCasamento, NOW()) AS idade"));
 
         return {
             quantidadeMembros: membros[0].quantidade,

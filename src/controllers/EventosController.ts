@@ -28,6 +28,13 @@ class EventoController {
 
         return response.json(evento);
     }
+
+    async inscricao(request: Request, response: Response) {
+        const params = request.params;
+        const eventos = await eventoModel.inscricao({ ativo: Boolean(params.ativo) });
+
+        return response.json(eventos);
+    }
 }
 
 export default EventoController;
