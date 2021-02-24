@@ -6,6 +6,10 @@ interface Quantidade {
     quantidade: number
 }
 
+interface Params {
+    ativo: boolean
+}
+
 class EventoModel {
     async index() {
         const eventos = await knex("eventos");
@@ -45,20 +49,27 @@ class EventoModel {
 
     async update(evento: Evento) {
         try {
-            const eventoInserir = {
+            const eventoUpdate = {
                 id: evento.id,
-                status: evento.status,
-                dataInicio: evento.dataInicio.split("T")[0],
-                dataFim: evento.dataFim.split("T")[0],
                 titulo: evento.titulo,
-                valor: evento.valor
+                tipo: evento.tipo,
+                status: evento.status,
+                repete: evento.repete,
+                diaSemana: evento.diaSemana,
+                frequencia: evento.frequencia,
+                ehPago: evento.ehPago,
+                valor: evento.valor,
+                dataInicio: evento.dataInicio?.split("T")[0],
+                dataFim: evento.dataFim?.split("T")[0],
+                horaInicio: evento.horaInicio,
+                horaFim: evento.horaFim
             }
 
             await knex("eventos")
-                .update(eventoInserir)
+                .update(eventoUpdate)
                 .where("id", String(evento.id));
 
-            return evento;
+            return eventoUpdate;
         } catch (error) {
             return { error };
         }
@@ -74,6 +85,12 @@ class EventoModel {
         } catch (error) {
             return { error };
         }
+    }
+
+    async inscricao(params: Params) {
+        const eventos = await knex("eventos").select("id", "titulo as descricao").where(params).andWhere("dataInicio", "<>", "null");
+
+        return eventos;
     }
 }
 

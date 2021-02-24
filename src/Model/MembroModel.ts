@@ -25,7 +25,7 @@ const utils = new Utils();
 class MembroModel {
     async index() {
         const membros = await knex<Membro>('membros')
-            .orderBy("nome")
+            .orderBy("nome").select("id", "nome")
 
         const ativos = await knex("membros")
             .where("ativo", "=", true)
@@ -42,19 +42,11 @@ class MembroModel {
 
         const membrosFiltrados = await Promise.all(membros.map(async (membro) => {
             const contato = await contatoModel.findMembro(Number(membro.id));
-            const endereco = await enderecoModel.findMembro(Number(membro.id));
-            const igreja = await igrejaModel.findMembro(Number(membro.id));
-            const parentes = await familiaController.findMembro(Number(membro.id));
-            const ministerios = await ministerioMembroModel.findMembro(Number(membro.id));
 
             return (
                 {
                     ...membro,
-                    contato,
-                    endereco,
-                    igreja,
-                    parentes,
-                    ministerios
+                    contato
                 }
             )
         }));
@@ -90,6 +82,7 @@ class MembroModel {
                 nome: membro.nome,
                 identidade: membro.identidade,
                 dataNascimento: membro.dataNascimento?.split("T")[0],
+                dataCasamento: membro.dataCasamento,
                 dataCadastro: knex.raw("now()"),
                 estadoCivil: membro.estadoCivil,
                 sexo: membro.sexo,
@@ -140,6 +133,7 @@ class MembroModel {
                 nome: membro.nome,
                 identidade: membro.identidade,
                 dataNascimento: membro.dataNascimento?.split("T")[0],
+                dataCasamento: membro.dataCasamento,
                 dataCadastro: membro.dataCadastro ? membro.dataCadastro : knex.raw("now()"),
                 estadoCivil: membro.estadoCivil,
                 sexo: membro.sexo,

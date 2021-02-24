@@ -10,6 +10,7 @@ export interface Membro {
     identidade?: string,
     dataNascimento?: string,
     dataCadastro?: string,
+    dataCasamento?: string,
     estadoCivil?: string,
     sexo?: string,
     profissao?: string,
