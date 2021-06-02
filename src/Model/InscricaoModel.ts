@@ -18,7 +18,7 @@ class InscricaoModel {
                 "i.telefone",
                 "i.pago",
                 "i.chEsEvento",
-                "e.descricao AS evento"
+                "e.titulo AS evento"
             );
 
         return inscricoes;
