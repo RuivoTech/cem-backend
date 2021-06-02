@@ -34,6 +34,8 @@ routes.get("/relatorios/:route", relatoriosController.switch);
 
 routes.get("/eventosInscricao", eventosController.inscricao);
 
+routes.post("/inscricao", inscricoesController.create);
+
 routes.use(loginController.verificarToken);
 
 routes.route("/home")
