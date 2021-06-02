@@ -5,5 +5,6 @@ export interface Inscricao {
     celular: string,
     telefone: string,
     chEsEvento: number,
+    evento: number,
     pago: boolean
 }
