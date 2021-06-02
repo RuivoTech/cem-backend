@@ -30,7 +30,7 @@ class InscricaoModel {
                 nome: inscricao.nome,
                 email: inscricao.email,
                 celular: inscricao.celular,
-                chEsEvento: inscricao.chEsEvento,
+                chEsEvento: inscricao.evento,
                 pago: inscricao.pago
             }
 
@@ -55,7 +55,7 @@ class InscricaoModel {
                 email: inscricao.email,
                 celular: inscricao.celular,
                 telefone: inscricao.telefone,
-                chEsEvento: inscricao.chEsEvento,
+                chEsEvento: inscricao.evento,
                 pago: inscricao.pago
             }
 
